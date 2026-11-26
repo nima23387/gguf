@@ -15,12 +15,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
       - name: Extract and validate full source
         run: |
           set -e
           test -f Nima-AI-Suite-1.0.0-Upload.zip
+
           mkdir -p /tmp/nima-ai-suite
-          unzip -q Nima-AI-Suite-1.0.0-Upload.zip -d /tmp/nima-ai-suite
+          python3 - <<'PY'
+          import zipfile
+
+          source = "Nima-AI-Suite-1.0.0-Upload.zip"
+          destination = "/tmp/nima-ai-suite"
+
+          with zipfile.ZipFile(source, "r") as z:
+              for item in z.infolist():
+                  name = item.filename.replace("\\", "/")
+                  if name.startswith("/") or ".." in name.split("/"):
+                      raise RuntimeError("Unsafe ZIP path: " + name)
+                  if name:
+                      item.filename = name
+                      z.extract(item, destination)
+          PY
 
           SRC=/tmp/nima-ai-suite
 
@@ -38,6 +54,7 @@ jobs:
           cp "$SRC/gradle.properties" .
 
           echo "Full Nima AI Suite source validated."
+
 
       - name: Set up JDK 8
         uses: actions/setup-java@v4
