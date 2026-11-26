@@ -10,7 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,15 +65,30 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-28" "build-tools;28.0.3"
-          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          set -e
+
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found!"
+            exit 1
+          fi
+
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses
+
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" \
+            "platform-tools" \
+            "platforms;android-28" \
+            "build-tools;28.0.3"
+            
       - name: Switch to JDK 8
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '8'
-
+          
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
