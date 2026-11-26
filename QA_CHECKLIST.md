@@ -1,0 +1,11 @@
+# QA checklist
+- [ ] GitHub Actions build succeeds
+- [ ] Unit tests pass
+- [ ] Install on legacy API 7 device/emulator
+- [ ] Install on modern Android device
+- [ ] Reject invalid GGUF magic
+- [ ] Reject unsupported GGUF version
+- [ ] Test truncated GGUF header
+- [ ] NimaScript arithmetic and precedence
+- [ ] Undefined variable and division-by-zero handling
+- [ ] Confirm no unavailable inference engine is advertised as ready
